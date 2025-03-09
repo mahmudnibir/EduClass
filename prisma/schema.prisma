@@ -14,7 +14,7 @@ datasource db {
 model User {
   id            String    @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
   password      String?
@@ -22,34 +22,36 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Study related
-  studyGroups     StudyGroup[]    @relation("StudyGroupMembers")
-  ownedGroups     StudyGroup[]    @relation("StudyGroupOwner")
-  studySessions   StudySession[]  @relation("SessionParticipants")
+  hostedGroups    StudyGroup[]   @relation("GroupHost")
+  memberGroups    StudyGroup[]   @relation("GroupMembers")
   hostedSessions  StudySession[]  @relation("SessionHost")
-  messages        Message[]
+  sessionParticipants StudySession[] @relation("SessionParticipants")
   quizzes         Quiz[]
   quizAttempts    QuizAttempt[]
   achievements    Achievement[]
-  studyTime      StudyTime[]
+  studyTime       StudyTime[]
 
   // Auth
   accounts      Account[]
   sessions      Session[]
+  sentMessages     Message[]  @relation("SentMessages")
+  receivedMessages Message[]  @relation("ReceivedMessages")
+  conversations    Conversation[] @relation("UserConversations")
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -71,13 +73,10 @@ model StudyGroup {
   subject     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  // Relations
-  ownerId     String
-  owner       User          @relation("StudyGroupOwner", fields: [ownerId], references: [id])
-  members     User[]        @relation("StudyGroupMembers")
+  hostId      String
+  host        User     @relation("GroupHost", fields: [hostId], references: [id])
+  members     User[]   @relation("GroupMembers")
   sessions    StudySession[]
-  messages    Message[]
   resources   Resource[]
 }
 
@@ -89,38 +88,37 @@ model StudySession {
   endTime     DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  // Relations
   hostId      String
-  host        User        @relation("SessionHost", fields: [hostId], references: [id])
+  host        User     @relation("SessionHost", fields: [hostId], references: [id])
   groupId     String
-  group       StudyGroup  @relation(fields: [groupId], references: [id])
+  group       StudyGroup @relation(fields: [groupId], references: [id])
   participants User[]     @relation("SessionParticipants")
 }
 
 model Message {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  userId    String
-  user      User       @relation(fields: [userId], references: [id])
-  groupId   String
-  group     StudyGroup @relation(fields: [groupId], references: [id])
+  id            String      @id @default(cuid())
+  content       String
+  type          String      @default("text") // text, file, voice, video
+  fileUrl       String?     // URL for file attachments
+  senderId      String
+  receiverId    String
+  conversationId String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  isRead        Boolean     @default(false)
+  sender        User        @relation("SentMessages", fields: [senderId], references: [id])
+  receiver      User        @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  conversation  Conversation @relation(fields: [conversationId], references: [id])
 }
 
 model Resource {
   id          String   @id @default(cuid())
-  name        String
-  type        String   // "document", "link", "code", etc.
-  url         String?
-  content     String?
+  title       String
+  description String?
+  type        String   // document, video, link, etc.
+  url         String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  // Relations
   groupId     String
   group       StudyGroup @relation(fields: [groupId], references: [id])
 }
@@ -129,26 +127,19 @@ model Quiz {
   id          String   @id @default(cuid())
   title       String
   description String?
+  questions   Question[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  // Relations
-  authorId    String
-  author      User         @relation(fields: [authorId], references: [id])
-  questions   Question[]
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
   attempts    QuizAttempt[]
 }
 
 model Question {
   id          String   @id @default(cuid())
-  content     String
-  options     String   // JSON array of options
-  answer      String
-  explanation String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
+  text        String
+  options     String[]
+  correctAnswer Int
   quizId      String
   quiz        Quiz     @relation(fields: [quizId], references: [id])
 }
@@ -156,35 +147,47 @@ model Question {
 model QuizAttempt {
   id          String   @id @default(cuid())
   score       Int
-  answers     String   // JSON object of question IDs and answers
+  answers     Int[]
   createdAt   DateTime @default(now())
-
-  // Relations
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
   quizId      String
   quiz        Quiz     @relation(fields: [quizId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model Achievement {
   id          String   @id @default(cuid())
-  name        String
+  title       String
   description String
-  type        String   // "study_time", "quiz_score", "attendance", etc.
+  icon        String?
   createdAt   DateTime @default(now())
-
-  // Relations
   userId      String
   user        User     @relation(fields: [userId], references: [id])
 }
 
 model StudyTime {
   id          String   @id @default(cuid())
-  duration    Int      // Duration in minutes
-  date        DateTime @default(now())
-  subject     String?
-
-  // Relations
+  duration    Int      // in minutes
+  subject     String
+  createdAt   DateTime @default(now())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  name      String?   // For group chats
+  isGroup   Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+  participants User[] @relation("UserConversations")
 }

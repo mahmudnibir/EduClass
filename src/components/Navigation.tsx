@@ -6,14 +6,27 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
 import ThemeToggle from './ThemeToggle';
+import { usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import {
+  SunIcon,
+  MoonIcon,
+  ChatBubbleLeftRightIcon,
+  HomeIcon,
+  UserGroupIcon,
+  BookOpenIcon,
+  Cog6ToothIcon,
+  SparklesIcon,
+} from '@heroicons/react/24/outline';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Study Groups', href: '/groups' },
-  { name: 'Resources', href: '/resources' },
-  { name: 'Quizzes', href: '/quizzes' },
+  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+  { name: 'Study Groups', href: '/groups', icon: UserGroupIcon },
+  { name: 'Resources', href: '/resources', icon: BookOpenIcon },
+  { name: 'Chat', href: '/chat', icon: ChatBubbleLeftRightIcon },
+  { name: 'AI Assistant', href: '/ai-chat', icon: SparklesIcon },
+  { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ];
 
 function classNames(...classes: string[]) {
@@ -21,21 +34,36 @@ function classNames(...classes: string[]) {
 }
 
 export default function Navigation() {
-  const { data: session, status } = useSession();
-  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const [isClient, setIsClient] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    setMounted(true);
+    setIsClient(true);
   }, []);
 
-  if (!mounted) {
-    return null;
+  if (!isClient) {
+    return (
+      <div className="h-16 bg-white dark:bg-gray-900 shadow">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 justify-between">
+            <div className="flex">
+              <div className="flex flex-shrink-0 items-center">
+                <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                  StudyApp
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <Disclosure as="nav" className="bg-white dark:bg-gray-900 shadow">
-      {({ open }) => (
+      {({ open, close }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 justify-between">
@@ -50,13 +78,15 @@ export default function Navigation() {
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={classNames(
+                      className={`inline-flex items-center ${
                         pathname === item.href
-                          ? 'border-indigo-500 text-gray-900 dark:text-white'
-                          : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100',
-                        'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
-                      )}
+                          ? 'border-b-2 border-blue-500 text-gray-900 dark:text-white'
+                          : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
+                      } px-1 pt-1 text-sm font-medium`}
                     >
+                      {item.icon && (
+                        <item.icon className="h-5 w-5 mr-1" />
+                      )}
                       {item.name}
                     </Link>
                   ))}
@@ -154,12 +184,12 @@ export default function Navigation() {
                   key={item.name}
                   as={Link}
                   href={item.href}
-                  className={classNames(
+                  className={`block ${
                     pathname === item.href
-                      ? 'bg-indigo-50 dark:bg-indigo-900 border-indigo-500 text-indigo-700 dark:text-indigo-200'
-                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100',
-                    'block border-l-4 py-2 pl-3 pr-4 text-base font-medium'
-                  )}
+                      ? 'bg-blue-50 dark:bg-gray-800 text-blue-500'
+                      : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-400 dark:hover:text-white'
+                  } px-3 py-2 text-base font-medium`}
+                  onClick={() => close()}
                 >
                   {item.name}
                 </Disclosure.Button>
@@ -201,12 +231,16 @@ export default function Navigation() {
                       as={Link}
                       href="/profile"
                       className="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200"
+                      onClick={() => close()}
                     >
                       Your Profile
                     </Disclosure.Button>
                     <Disclosure.Button
                       as="button"
-                      onClick={() => signOut()}
+                      onClick={() => {
+                        signOut();
+                        close();
+                      }}
                       className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200"
                     >
                       Sign out
@@ -217,7 +251,10 @@ export default function Navigation() {
                 <div className="mt-3 space-y-1">
                   <Disclosure.Button
                     as="button"
-                    onClick={() => signIn()}
+                    onClick={() => {
+                      signIn();
+                      close();
+                    }}
                     className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200"
                   >
                     Sign in

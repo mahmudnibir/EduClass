@@ -1,54 +1,26 @@
-# StudyApp - Collaborative Learning Platform
+# Study App
 
-A web-based platform that allows students to collaborate in real-time, join study groups, share resources, track progress, and schedule study sessions.
+A modern study application built with Next.js, featuring AI-powered study assistance, interactive quizzes, and real-time collaboration.
 
 ## Features
 
-- **User Authentication**
-  - Email/Password and Google authentication
-  - User profiles and settings
-
-- **Study Groups**
-  - Create and join study groups
-  - Filter groups by subjects/topics
-  - Real-time chat communication
-
-- **Collaborative Tools**
-  - Shared whiteboard for real-time drawing
-  - Document sharing and collaboration
-  - Real-time code editor (coming soon)
-
-- **Study Session Management**
-  - Schedule study sessions
-  - Calendar integration
-  - Session reminders
-
-- **Progress Tracking**
-  - Study time logging
-  - Achievement system
-  - Performance analytics
-
-- **Quiz System**
-  - Create and take practice quizzes
-  - Track quiz scores
-  - Review quiz history
+- 🤖 AI Study Assistant
+- 📚 Interactive Quizzes and Flashcards
+- 💬 Real-time Chat
+- 👥 Study Groups
+- 🎯 Progress Tracking
+- 🌙 Dark Mode Support
+- 📱 Responsive Design
 
 ## Tech Stack
 
-- **Frontend**
-  - Next.js 14 (App Router)
-  - React
-  - TypeScript
-  - Tailwind CSS
-  - HeadlessUI
-  - Socket.io Client
-
-- **Backend**
-  - Next.js API Routes
-  - Prisma ORM
-  - SQLite Database
-  - NextAuth.js
-  - Socket.io
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- Prisma
+- NextAuth.js
+- PostgreSQL
+- Vercel
 
 ## Getting Started
 
@@ -65,16 +37,15 @@ A web-based platform that allows students to collaborate in real-time, join stud
 
 3. Set up environment variables:
    Create a `.env` file in the root directory with the following variables:
-   ```
-   DATABASE_URL="file:./dev.db"
+   ```env
+   DATABASE_URL="your_database_url"
+   NEXTAUTH_SECRET="your_nextauth_secret"
    NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="your-secret-key"
-   GOOGLE_CLIENT_ID="your-google-client-id"
-   GOOGLE_CLIENT_SECRET="your-google-client-secret"
    ```
 
-4. Initialize the database:
+4. Set up the database:
    ```bash
+   npx prisma generate
    npx prisma db push
    ```
 
@@ -84,6 +55,15 @@ A web-based platform that allows students to collaborate in real-time, join stud
    ```
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Deployment
+
+This project is configured for deployment on Vercel. To deploy:
+
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Add your environment variables in the Vercel dashboard
+4. Deploy!
 
 ## Project Structure
 
@@ -103,15 +83,11 @@ src/
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
 
