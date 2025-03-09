@@ -4,13 +4,10 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { 
-  PlusIcon,
   AcademicCapIcon,
   ClockIcon,
   ChartBarIcon,
   CheckCircleIcon,
-  XCircleIcon,
-  QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 
 interface Question {
@@ -39,7 +36,6 @@ export default function QuizzesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
@@ -203,13 +199,6 @@ export default function QuizzesPage() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quizzes</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">Test your knowledge and track your progress</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Create Quiz
-        </button>
       </div>
 
       {/* Quizzes Grid */}
