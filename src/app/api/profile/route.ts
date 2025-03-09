@@ -3,7 +3,24 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-export async function PUT(req: Request) {
+interface ProfileUpdateData {
+  name?: string;
+  bio?: string;
+  location?: string;
+  language?: string;
+  notifications?: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+  privacy?: {
+    profileVisibility: 'public' | 'private' | 'friends';
+    emailVisibility: boolean;
+    activityVisibility: boolean;
+  };
+}
+
+export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -11,25 +28,26 @@ export async function PUT(req: Request) {
         JSON.stringify({ error: 'Unauthorized' }), 
         { 
           status: 401,
-          headers: { 'Content-Type': 'application/json' }
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
       );
     }
 
-    const data = await req.json();
-    const { name, bio, location, language, notifications, privacy } = data;
+    const data: ProfileUpdateData = await request.json();
 
     const updatedUser = await prisma.user.update({
       where: { 
         email: session.user.email 
       },
       data: {
-        name: name || undefined,
-        bio: bio || undefined,
-        location: location || undefined,
-        language: language || undefined,
-        notifications: notifications ? JSON.stringify(notifications) : undefined,
-        privacy: privacy ? JSON.stringify(privacy) : undefined,
+        name: data.name,
+        bio: data.bio,
+        location: data.location,
+        language: data.language,
+        notifications: data.notifications ? JSON.stringify(data.notifications) : undefined,
+        privacy: data.privacy ? JSON.stringify(data.privacy) : undefined,
         updatedAt: new Date(),
       },
     });
@@ -37,35 +55,34 @@ export async function PUT(req: Request) {
     return new NextResponse(
       JSON.stringify({
         user: {
-          id: updatedUser.id,
-          name: updatedUser.name,
-          email: updatedUser.email,
-          bio: updatedUser.bio,
-          location: updatedUser.location,
-          language: updatedUser.language,
+          ...updatedUser,
           notifications: updatedUser.notifications ? JSON.parse(updatedUser.notifications as string) : null,
           privacy: updatedUser.privacy ? JSON.parse(updatedUser.privacy as string) : null,
-          image: updatedUser.image,
         }
       }),
       { 
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+        },
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Profile update error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
     return new NextResponse(
-      JSON.stringify({ error: error.message || 'Failed to update profile' }),
+      JSON.stringify({ error: errorMessage }),
       { 
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+        },
       }
     );
   }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -73,7 +90,9 @@ export async function GET(req: Request) {
         JSON.stringify({ error: 'Unauthorized' }), 
         { 
           status: 401,
-          headers: { 'Content-Type': 'application/json' }
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
       );
     }
@@ -86,10 +105,12 @@ export async function GET(req: Request) {
 
     if (!user) {
       return new NextResponse(
-        JSON.stringify({ error: 'User not found' }),
+        JSON.stringify({ error: 'User not found' }), 
         { 
           status: 404,
-          headers: { 'Content-Type': 'application/json' }
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
       );
     }
@@ -97,29 +118,28 @@ export async function GET(req: Request) {
     return new NextResponse(
       JSON.stringify({
         user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          bio: user.bio,
-          location: user.location,
-          language: user.language,
+          ...user,
           notifications: user.notifications ? JSON.parse(user.notifications as string) : null,
           privacy: user.privacy ? JSON.parse(user.privacy as string) : null,
-          image: user.image,
         }
       }),
       { 
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+        },
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Profile fetch error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
     return new NextResponse(
-      JSON.stringify({ error: error.message || 'Failed to fetch profile' }),
+      JSON.stringify({ error: errorMessage }),
       { 
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+        },
       }
     );
   }

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
@@ -83,12 +83,11 @@ export async function GET(req: Request) {
         },
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Groups fetch error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch groups';
     return new NextResponse(
-      JSON.stringify({ 
-        error: error.message || 'Failed to fetch groups',
-      }),
+      JSON.stringify({ error: errorMessage }),
       { 
         status: 500,
         headers: {
