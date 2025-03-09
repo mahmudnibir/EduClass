@@ -1,10 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import ChatInterface from '@/components/chat/ChatInterface';
-import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function ChatPage() {
   const { data: session, status } = useSession();
@@ -12,30 +12,26 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/signin');
+      router.push('/auth/signin');
     }
   }, [status, router]);
 
   if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (!session) {
     return null;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Chat</h1>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg h-[calc(100vh-200px)]">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+    >
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden h-[calc(100vh-12rem)]">
+        <div className="h-full">
           <ChatInterface />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 } 

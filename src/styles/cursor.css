@@ -1,0 +1,108 @@
+/* Interactive Elements */
+.cursor-interactive {
+  cursor: pointer;
+  transition: all 200ms;
+}
+.cursor-interactive:hover {
+  transform: scale(1.02);
+}
+
+/* Disabled Elements */
+.cursor-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Text Selection */
+.cursor-text {
+  cursor: text;
+}
+
+/* Loading State */
+.cursor-loading {
+  cursor: wait;
+}
+
+/* Draggable Elements */
+.cursor-drag {
+  cursor: grab;
+}
+.cursor-drag:active {
+  cursor: grabbing;
+}
+
+/* Resizable Elements */
+.cursor-resize {
+  cursor: ew-resize;
+}
+
+/* Custom Hover Effects */
+.hover-lift {
+  transform: translateZ(0);
+  transition: transform 200ms;
+}
+.hover-lift:hover {
+  transform: scale(1.05);
+}
+
+.hover-glow {
+  transition: box-shadow 200ms;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.hover-glow:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.hover-scale {
+  transition: transform 200ms;
+}
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Button Hover Effects */
+.button-hover {
+  transition: all 200ms;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.button-hover:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+.button-hover:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Link Hover Effects */
+.link-hover {
+  transition: all 200ms;
+}
+.link-hover:hover {
+  color: #3B82F6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.dark .link-hover:hover {
+  color: #60A5FA;
+}
+
+/* Card Hover Effects */
+.card-hover {
+  transition: all 200ms;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.card-hover:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Icon Button Hover Effects */
+.icon-hover {
+  transition: color 200ms;
+}
+.icon-hover:hover {
+  color: #374151;
+}
+.dark .icon-hover:hover {
+  color: #D1D5DB;
+} 

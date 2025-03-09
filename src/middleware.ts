@@ -21,16 +21,11 @@ export default withAuth(
         }
         // Require authentication for protected routes
         if (
-          req.nextUrl.pathname === "/dashboard" ||
-          req.nextUrl.pathname === "/groups" ||
-          req.nextUrl.pathname === "/resources" ||
-          req.nextUrl.pathname === "/quizzes" ||
-          req.nextUrl.pathname === "/profile" ||
-          req.nextUrl.pathname.startsWith("/dashboard/") ||
-          req.nextUrl.pathname.startsWith("/groups/") ||
-          req.nextUrl.pathname.startsWith("/resources/") ||
-          req.nextUrl.pathname.startsWith("/quizzes/") ||
-          req.nextUrl.pathname.startsWith("/profile/")
+          req.nextUrl.pathname.startsWith("/dashboard") ||
+          req.nextUrl.pathname.startsWith("/groups") ||
+          req.nextUrl.pathname.startsWith("/resources") ||
+          req.nextUrl.pathname.startsWith("/quizzes") ||
+          req.nextUrl.pathname.startsWith("/profile")
         ) {
           return !!token;
         }
@@ -43,12 +38,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/",
-    "/dashboard",
-    "/groups",
-    "/resources",
-    "/quizzes",
-    "/profile",
     "/dashboard/:path*",
     "/groups/:path*",
     "/resources/:path*",

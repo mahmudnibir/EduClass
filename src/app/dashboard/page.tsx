@@ -12,28 +12,23 @@ import {
   CalendarIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-
-interface StudyGroup {
-  id: number;
-  name: string;
-  members: number;
-  subject: string;
-  lastActive: string;
-}
-
-interface UpcomingSession {
-  id: number;
-  title: string;
-  date: string;
-  groupName: string;
-  type: 'study' | 'quiz' | 'discussion';
-}
+import { StudyGroup, StudySession } from '@prisma/client';
 
 interface StudyStats {
   totalHours: number;
   averageScore: number;
   completedQuizzes: number;
   activeGroups: number;
+}
+
+interface GroupWithDetails extends StudyGroup {
+  members: any[];
+  lastActive?: string;
+}
+
+interface SessionWithDetails extends StudySession {
+  type: 'quiz' | 'study' | 'discussion';
+  groupName: string;
 }
 
 export default function DashboardPage() {
@@ -45,62 +40,96 @@ export default function DashboardPage() {
     completedQuizzes: 0,
     activeGroups: 0
   });
-  const [studyGroups, setStudyGroups] = useState<StudyGroup[]>([]);
-  const [upcomingSessions, setUpcomingSessions] = useState<UpcomingSession[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [groups, setGroups] = useState<GroupWithDetails[]>([]);
+  const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.replace('/auth/signin');
+      router.push('/auth/signin');
     }
   }, [status, router]);
 
   useEffect(() => {
-    // Simulated data loading
-    const loadDashboardData = () => {
-      // Simulated API call delay
-      setTimeout(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [groupsRes, sessionsRes] = await Promise.all([
+          fetch('/api/groups'),
+          fetch('/api/sessions')
+        ]);
+
+        if (!groupsRes.ok || !sessionsRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const [groupsData, sessionsData] = await Promise.all([
+          groupsRes.json(),
+          sessionsRes.json()
+        ]);
+
+        // Process groups data
+        const processedGroups = (groupsData.hostedGroups || [])
+          .concat(groupsData.memberGroups || [])
+          .map((group: GroupWithDetails) => ({
+            ...group,
+            lastActive: new Date(group.updatedAt).toLocaleDateString()
+          }));
+        setGroups(processedGroups);
+
+        // Process sessions data
+        const processedSessions = (sessionsData.hostedSessions || [])
+          .concat(sessionsData.participatingSessions || [])
+          .map((session: SessionWithDetails) => ({
+            ...session,
+            type: determineSessionType(session),
+            groupName: session.group?.name || 'Unknown Group'
+          }))
+          .sort((a: SessionWithDetails, b: SessionWithDetails) => 
+            new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+          );
+        setSessions(processedSessions);
+
+        // Update stats
         setStats({
-          totalHours: 24,
-          averageScore: 85,
-          completedQuizzes: 12,
-          activeGroups: 3
+          totalHours: calculateTotalHours(processedSessions),
+          averageScore: calculateAverageScore(processedSessions),
+          completedQuizzes: processedSessions.filter(s => s.type === 'quiz').length,
+          activeGroups: processedGroups.length
         });
-
-        setStudyGroups([
-          { id: 1, name: 'Mathematics 101', members: 8, subject: 'Math', lastActive: '2 hours ago' },
-          { id: 2, name: 'Physics Study Group', members: 5, subject: 'Physics', lastActive: '1 day ago' },
-          { id: 3, name: 'Programming Club', members: 12, subject: 'Computer Science', lastActive: '3 hours ago' },
-        ]);
-
-        setUpcomingSessions([
-          { id: 1, title: 'Calculus Review', date: '2024-03-25T15:00:00Z', groupName: 'Mathematics 101', type: 'study' },
-          { id: 2, title: 'Physics Quiz', date: '2024-03-26T14:00:00Z', groupName: 'Physics Study Group', type: 'quiz' },
-          { id: 3, title: 'Algorithm Discussion', date: '2024-03-27T16:00:00Z', groupName: 'Programming Club', type: 'discussion' },
-        ]);
-
-        setIsLoading(false);
-      }, 1000);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     if (session) {
-      loadDashboardData();
+      fetchData();
     }
   }, [session]);
 
-  if (status === 'loading' || isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  const determineSessionType = (session: SessionWithDetails): 'quiz' | 'study' | 'discussion' => {
+    // You can implement your own logic to determine session type
+    return 'study';
+  };
 
-  if (!session) {
-    return null;
+  const calculateTotalHours = (sessions: SessionWithDetails[]): number => {
+    return sessions.reduce((total, session) => {
+      const duration = new Date(session.endTime).getTime() - new Date(session.startTime).getTime();
+      return total + (duration / (1000 * 60 * 60));
+    }, 0);
+  };
+
+  const calculateAverageScore = (sessions: SessionWithDetails[]): number => {
+    const quizSessions = sessions.filter(s => s.type === 'quiz');
+    if (quizSessions.length === 0) return 0;
+    // Implement your score calculation logic here
+    return 85; // Placeholder
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   const formatDate = (dateString: string) => {
@@ -119,10 +148,10 @@ export default function DashboardPage() {
       {/* Welcome Section */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Welcome back, {session.user?.name || 'Student'}!
+          Welcome back, {session?.user?.name || 'Student'}!
         </h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Here's an overview of your learning progress
+          Here&apos;s an overview of your learning progress
         </p>
       </div>
 
@@ -133,7 +162,7 @@ export default function DashboardPage() {
             <ClockIcon className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Study Hours</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.totalHours}h</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{Math.round(stats.totalHours)}h</p>
             </div>
           </div>
         </div>
@@ -181,7 +210,7 @@ export default function DashboardPage() {
               </Link>
             </div>
             <div className="space-y-4">
-              {studyGroups.map((group) => (
+              {groups.map((group) => (
                 <div
                   key={group.id}
                   className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
@@ -194,7 +223,7 @@ export default function DashboardPage() {
                     <div>
                       <h3 className="text-sm font-medium text-gray-900 dark:text-white">{group.name}</h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {group.members} members · {group.lastActive}
+                        {group.members?.length || 0} members · Last active: {group.lastActive}
                       </p>
                     </div>
                   </div>
@@ -203,6 +232,9 @@ export default function DashboardPage() {
                   </span>
                 </div>
               ))}
+              {groups.length === 0 && (
+                <p className="text-center text-gray-500 dark:text-gray-400">No study groups yet</p>
+              )}
             </div>
           </div>
         </div>
@@ -212,7 +244,7 @@ export default function DashboardPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Upcoming Sessions</h2>
             <div className="space-y-4">
-              {upcomingSessions.map((session) => (
+              {sessions.map((session) => (
                 <div
                   key={session.id}
                   className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
@@ -231,11 +263,14 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                     <CalendarIcon className="h-4 w-4 mr-1" />
-                    {formatDate(session.date)}
+                    {formatDate(session.startTime)}
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{session.groupName}</p>
                 </div>
               ))}
+              {sessions.length === 0 && (
+                <p className="text-center text-gray-500 dark:text-gray-400">No upcoming sessions</p>
+              )}
             </div>
           </div>
         </div>

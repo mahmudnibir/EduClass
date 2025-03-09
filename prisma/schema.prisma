@@ -18,6 +18,11 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
+  bio           String?   @db.Text
+  location      String?
+  language      String?   @default("English")
+  notifications Json?
+  privacy       Json?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -25,18 +30,18 @@ model User {
   hostedGroups    StudyGroup[]   @relation("GroupHost")
   memberGroups    StudyGroup[]   @relation("GroupMembers")
   hostedSessions  StudySession[]  @relation("SessionHost")
-  sessionParticipants StudySession[] @relation("SessionParticipants")
   quizzes         Quiz[]
   quizAttempts    QuizAttempt[]
   achievements    Achievement[]
   studyTime       StudyTime[]
 
-  // Auth
+  // Auth and Chat
   accounts      Account[]
   sessions      Session[]
   sentMessages     Message[]  @relation("SentMessages")
   receivedMessages Message[]  @relation("ReceivedMessages")
-  conversations    Conversation[] @relation("UserConversations")
+  conversations    Conversation[] @relation("ConversationParticipants")
+  sessionParticipants StudySession[] @relation("SessionParticipants")
 }
 
 model Account {
@@ -92,14 +97,14 @@ model StudySession {
   host        User     @relation("SessionHost", fields: [hostId], references: [id])
   groupId     String
   group       StudyGroup @relation(fields: [groupId], references: [id])
-  participants User[]     @relation("SessionParticipants")
+  participants User[]   @relation("SessionParticipants")
 }
 
 model Message {
   id            String      @id @default(cuid())
   content       String
-  type          String      @default("text") // text, file, voice, video
-  fileUrl       String?     // URL for file attachments
+  type          String      @default("text")
+  fileUrl       String?
   senderId      String
   receiverId    String
   conversationId String
@@ -184,10 +189,10 @@ model VerificationToken {
 
 model Conversation {
   id        String    @id @default(cuid())
-  name      String?   // For group chats
+  name      String?
   isGroup   Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   messages  Message[]
-  participants User[] @relation("UserConversations")
+  participants User[] @relation("ConversationParticipants")
 }
