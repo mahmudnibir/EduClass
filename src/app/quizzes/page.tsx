@@ -117,31 +117,6 @@ export default function QuizzesPage() {
     }
   }, [session]);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (showQuizModal && selectedQuiz && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            submitQuiz();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [showQuizModal, selectedQuiz, timeLeft]);
-
-  const startQuiz = (quiz: Quiz) => {
-    setSelectedQuiz(quiz);
-    setCurrentQuestion(0);
-    setAnswers(new Array(quiz.questions.length).fill(-1));
-    setTimeLeft(quiz.timeLimit);
-    setQuizResults(null);
-    setShowQuizModal(true);
-  };
-
   const submitQuiz = () => {
     if (!selectedQuiz) return;
 
@@ -171,6 +146,31 @@ export default function QuizzesPage() {
           }
         : quiz
     ));
+  };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showQuizModal && selectedQuiz && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            submitQuiz();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [showQuizModal, selectedQuiz, timeLeft, submitQuiz]);
+
+  const startQuiz = (quiz: Quiz) => {
+    setSelectedQuiz(quiz);
+    setCurrentQuestion(0);
+    setAnswers(new Array(quiz.questions.length).fill(-1));
+    setTimeLeft(quiz.timeLimit);
+    setQuizResults(null);
+    setShowQuizModal(true);
   };
 
   const formatTime = (seconds: number) => {
