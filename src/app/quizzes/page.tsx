@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { 
   PlusIcon,
   AcademicCapIcon,
@@ -117,7 +117,7 @@ export default function QuizzesPage() {
     }
   }, [session]);
 
-  const submitQuiz = () => {
+  const submitQuiz = useCallback(() => {
     if (!selectedQuiz) return;
 
     const correctAnswers = answers.reduce((acc, answer, index) => {
@@ -134,19 +134,20 @@ export default function QuizzesPage() {
       timeTaken,
     });
 
-    // Update quiz in list
-    setQuizzes(quizzes.map(quiz =>
-      quiz.id === selectedQuiz.id
-        ? {
-            ...quiz,
-            isCompleted: true,
-            lastScore: score,
-            attempts: quiz.attempts + 1,
-            averageScore: Math.round(((quiz.averageScore * quiz.attempts) + score) / (quiz.attempts + 1)),
-          }
-        : quiz
-    ));
-  };
+    setQuizzes(prevQuizzes => 
+      prevQuizzes.map(quiz =>
+        quiz.id === selectedQuiz.id
+          ? {
+              ...quiz,
+              isCompleted: true,
+              lastScore: score,
+              attempts: quiz.attempts + 1,
+              averageScore: Math.round(((quiz.averageScore * quiz.attempts) + score) / (quiz.attempts + 1)),
+            }
+          : quiz
+      )
+    );
+  }, [selectedQuiz, answers, timeLeft]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
