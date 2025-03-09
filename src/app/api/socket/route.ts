@@ -9,6 +9,16 @@ export async function GET(req: NextApiRequest) {
     const io = new Server(httpServer, {
       path: '/api/socket',
       addTrailingSlash: false,
+      cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+        credentials: true
+      },
+      transports: ['websocket', 'polling'],
+      connectionStateRecovery: {
+        maxDisconnectionDuration: 2 * 60 * 1000,
+        skipMiddlewares: true,
+      },
     });
 
     io.on('connection', (socket) => {
