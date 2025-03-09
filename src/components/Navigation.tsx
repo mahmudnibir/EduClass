@@ -6,6 +6,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
+import ThemeToggle from './ThemeToggle';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard' },
@@ -28,12 +29,12 @@ export default function Navigation() {
 
   if (!isClient) {
     return (
-      <div className="h-16 bg-white shadow">
+      <div className="h-16 bg-white dark:bg-gray-900 shadow">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 justify-between">
             <div className="flex">
               <div className="flex flex-shrink-0 items-center">
-                <span className="text-xl font-bold text-indigo-600">
+                <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
                   StudyApp
                 </span>
               </div>
@@ -45,14 +46,14 @@ export default function Navigation() {
   }
 
   return (
-    <Disclosure as="nav" className="bg-white shadow">
+    <Disclosure as="nav" className="bg-white dark:bg-gray-900 shadow">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 justify-between">
               <div className="flex">
                 <div className="flex flex-shrink-0 items-center">
-                  <Link href="/" className="text-xl font-bold text-indigo-600">
+                  <Link href="/" className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
                     StudyApp
                   </Link>
                 </div>
@@ -61,18 +62,19 @@ export default function Navigation() {
                     <Link
                       key={item.name}
                       href={item.href}
-                      className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100"
                     >
                       {item.name}
                     </Link>
                   ))}
                 </div>
               </div>
-              <div className="hidden sm:ml-6 sm:flex sm:items-center">
+              <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
+                <ThemeToggle />
                 {session ? (
                   <Menu as="div" className="relative ml-3">
                     <div>
-                      <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                      <Menu.Button className="flex rounded-full bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         <span className="sr-only">Open user menu</span>
                         {session.user?.image ? (
                           <Image
@@ -83,8 +85,8 @@ export default function Navigation() {
                             height={32}
                           />
                         ) : (
-                          <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                            <span className="text-indigo-600 font-medium">
+                          <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                            <span className="text-indigo-600 dark:text-indigo-400 font-medium">
                               {session.user?.name?.[0] || session.user?.email?.[0]}
                             </span>
                           </div>
@@ -100,14 +102,14 @@ export default function Navigation() {
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <Menu.Item>
                           {({ active }) => (
                             <Link
                               href="/profile"
                               className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-sm text-gray-700'
+                                active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                                'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200'
                               )}
                             >
                               Your Profile
@@ -119,8 +121,8 @@ export default function Navigation() {
                             <button
                               onClick={() => signOut()}
                               className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block w-full text-left px-4 py-2 text-sm text-gray-700'
+                                active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                                'block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200'
                               )}
                             >
                               Sign out
@@ -133,7 +135,7 @@ export default function Navigation() {
                 ) : (
                   <button
                     onClick={() => signIn()}
-                    className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    className="rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500"
                   >
                     Sign in
                   </button>
@@ -159,13 +161,13 @@ export default function Navigation() {
                   key={item.name}
                   as={Link}
                   href={item.href}
-                  className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+                  className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-100"
                 >
                   {item.name}
                 </Disclosure.Button>
               ))}
             </div>
-            <div className="border-t border-gray-200 pb-3 pt-4">
+            <div className="border-t border-gray-200 dark:border-gray-700 pb-3 pt-4">
               {session ? (
                 <>
                   <div className="flex items-center px-4">
@@ -178,33 +180,36 @@ export default function Navigation() {
                         height={32}
                       />
                     ) : (
-                      <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <span className="text-indigo-600 font-medium">
+                      <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                        <span className="text-indigo-600 dark:text-indigo-400 font-medium">
                           {session.user?.name?.[0] || session.user?.email?.[0]}
                         </span>
                       </div>
                     )}
                     <div className="ml-3">
-                      <div className="text-base font-medium text-gray-800">
+                      <div className="text-base font-medium text-gray-800 dark:text-gray-200">
                         {session.user?.name}
                       </div>
-                      <div className="text-sm font-medium text-gray-500">
+                      <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
                         {session.user?.email}
                       </div>
+                    </div>
+                    <div className="ml-auto">
+                      <ThemeToggle />
                     </div>
                   </div>
                   <div className="mt-3 space-y-1">
                     <Disclosure.Button
                       as={Link}
                       href="/profile"
-                      className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                      className="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200"
                     >
                       Your Profile
                     </Disclosure.Button>
                     <Disclosure.Button
                       as="button"
                       onClick={() => signOut()}
-                      className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                      className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200"
                     >
                       Sign out
                     </Disclosure.Button>
@@ -215,7 +220,7 @@ export default function Navigation() {
                   <Disclosure.Button
                     as="button"
                     onClick={() => signIn()}
-                    className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                    className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200"
                   >
                     Sign in
                   </Disclosure.Button>
