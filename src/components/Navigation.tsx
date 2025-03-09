@@ -6,6 +6,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import ThemeToggle from './ThemeToggle';
 
 const navigation = [
@@ -20,29 +21,16 @@ function classNames(...classes: string[]) {
 }
 
 export default function Navigation() {
-  const { data: session } = useSession();
-  const [isClient, setIsClient] = useState(false);
+  const { data: session, status } = useSession();
+  const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
-  if (!isClient) {
-    return (
-      <div className="h-16 bg-white dark:bg-gray-900 shadow">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 justify-between">
-            <div className="flex">
-              <div className="flex flex-shrink-0 items-center">
-                <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                  StudyApp
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (!mounted) {
+    return null;
   }
 
   return (
@@ -62,7 +50,12 @@ export default function Navigation() {
                     <Link
                       key={item.name}
                       href={item.href}
-                      className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100"
+                      className={classNames(
+                        pathname === item.href
+                          ? 'border-indigo-500 text-gray-900 dark:text-white'
+                          : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100',
+                        'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
+                      )}
                     >
                       {item.name}
                     </Link>
@@ -161,7 +154,12 @@ export default function Navigation() {
                   key={item.name}
                   as={Link}
                   href={item.href}
-                  className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-100"
+                  className={classNames(
+                    pathname === item.href
+                      ? 'bg-indigo-50 dark:bg-indigo-900 border-indigo-500 text-indigo-700 dark:text-indigo-200'
+                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100',
+                    'block border-l-4 py-2 pl-3 pr-4 text-base font-medium'
+                  )}
                 >
                   {item.name}
                 </Disclosure.Button>
