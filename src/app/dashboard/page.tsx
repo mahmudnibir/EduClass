@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navigation from '@/components/Navigation';
 import { 
   UserGroupIcon, 
@@ -11,7 +11,7 @@ import {
   ChartBarIcon 
 } from '@heroicons/react/24/outline';
 
-// Mock data - replace with real data from API
+// Move mock data outside the component
 const mockStudyGroups = [
   { id: 1, name: 'Mathematics 101', members: 5, subject: 'Mathematics' },
   { id: 2, name: 'Physics Study Group', members: 3, subject: 'Physics' },
@@ -32,14 +32,16 @@ const mockRecentActivity = [
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     if (status === 'unauthenticated') {
       router.push('/auth/signin');
     }
   }, [status, router]);
 
-  if (status === 'loading') {
+  if (!isClient || status === 'loading') {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
@@ -48,6 +50,10 @@ export default function Dashboard() {
         </div>
       </div>
     );
+  }
+
+  if (status === 'unauthenticated') {
+    return null;
   }
 
   return (
@@ -59,10 +65,10 @@ export default function Dashboard() {
           {/* Welcome Section */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">
-              Welcome back, {session?.user?.name}!
+              Welcome back, {session?.user?.name || &apos;User&apos;}!
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Here's what's happening with your studies
+              Here&apos;s what&apos;s happening with your studies
             </p>
           </div>
 

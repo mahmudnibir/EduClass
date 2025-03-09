@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,12 +21,12 @@ export default function SignIn() {
       });
 
       if (result?.error) {
-        setError('Invalid credentials');
+        setErrorMessage('Invalid credentials');
       } else {
         router.push('/dashboard');
       }
-    } catch (error) {
-      setError('Something went wrong');
+    } catch {
+      setErrorMessage('Something went wrong');
     }
   };
 
@@ -83,8 +83,8 @@ export default function SignIn() {
               </div>
             </div>
 
-            {error && (
-              <div className="text-red-600 text-sm">{error}</div>
+            {errorMessage && (
+              <div className="text-red-600 text-sm">{errorMessage}</div>
             )}
 
             <div>
