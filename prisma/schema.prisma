@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Study related
+  studyGroups     StudyGroup[]    @relation("StudyGroupMembers")
+  ownedGroups     StudyGroup[]    @relation("StudyGroupOwner")
+  studySessions   StudySession[]  @relation("SessionParticipants")
+  hostedSessions  StudySession[]  @relation("SessionHost")
+  messages        Message[]
+  quizzes         Quiz[]
+  quizAttempts    QuizAttempt[]
+  achievements    Achievement[]
+  studyTime      StudyTime[]
+
+  // Auth
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StudyGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  subject     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  ownerId     String
+  owner       User          @relation("StudyGroupOwner", fields: [ownerId], references: [id])
+  members     User[]        @relation("StudyGroupMembers")
+  sessions    StudySession[]
+  messages    Message[]
+  resources   Resource[]
+}
+
+model StudySession {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  hostId      String
+  host        User        @relation("SessionHost", fields: [hostId], references: [id])
+  groupId     String
+  group       StudyGroup  @relation(fields: [groupId], references: [id])
+  participants User[]     @relation("SessionParticipants")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  groupId   String
+  group     StudyGroup @relation(fields: [groupId], references: [id])
+}
+
+model Resource {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "document", "link", "code", etc.
+  url         String?
+  content     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  groupId     String
+  group       StudyGroup @relation(fields: [groupId], references: [id])
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId    String
+  author      User         @relation(fields: [authorId], references: [id])
+  questions   Question[]
+  attempts    QuizAttempt[]
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  content     String
+  options     String   // JSON array of options
+  answer      String
+  explanation String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id])
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  score       Int
+  answers     String   // JSON object of question IDs and answers
+  createdAt   DateTime @default(now())
+
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id])
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  type        String   // "study_time", "quiz_score", "attendance", etc.
+  createdAt   DateTime @default(now())
+
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model StudyTime {
+  id          String   @id @default(cuid())
+  duration    Int      // Duration in minutes
+  date        DateTime @default(now())
+  subject     String?
+
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+}
