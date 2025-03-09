@@ -19,7 +19,7 @@ function classNames(...classes: string[]) {
 }
 
 export default function Navigation() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {

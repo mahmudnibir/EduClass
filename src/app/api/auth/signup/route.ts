@@ -39,9 +39,9 @@ export async function POST(request: Request) {
       },
     });
 
-    // Remove password from response using object destructuring
-    const userWithoutPassword = { ...user };
-    delete userWithoutPassword.password;
+    // Remove password from response
+    const { id, name: userName, email: userEmail, createdAt, updatedAt } = user;
+    const userWithoutPassword = { id, name: userName, email: userEmail, createdAt, updatedAt };
 
     return NextResponse.json(
       { message: 'User created successfully', user: userWithoutPassword },
