@@ -8,14 +8,9 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Unauthorized' }), 
-        { 
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
@@ -56,14 +51,9 @@ export async function GET() {
     });
 
     if (!user) {
-      return new NextResponse(
-        JSON.stringify({ error: 'User not found' }), 
-        { 
-          status: 404,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
       );
     }
 
@@ -71,29 +61,16 @@ export async function GET() {
     const hostedGroups = user.hostedGroups || [];
     const memberGroups = user.memberGroups || [];
 
-    return new NextResponse(
-      JSON.stringify({
-        hostedGroups,
-        memberGroups,
-      }),
-      { 
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    return NextResponse.json({
+      hostedGroups,
+      memberGroups,
+    });
   } catch (error: unknown) {
     console.error('Groups fetch error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch groups';
-    return new NextResponse(
-      JSON.stringify({ error: errorMessage }),
-      { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+    return NextResponse.json(
+      { error: errorMessage },
+      { status: 500 }
     );
   }
 } 

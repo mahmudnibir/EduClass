@@ -24,14 +24,9 @@ export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Unauthorized' }), 
-        { 
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
@@ -52,32 +47,19 @@ export async function PUT(request: Request) {
       },
     });
 
-    return new NextResponse(
-      JSON.stringify({
-        user: {
-          ...updatedUser,
-          notifications: updatedUser.notifications ? JSON.parse(updatedUser.notifications as string) : null,
-          privacy: updatedUser.privacy ? JSON.parse(updatedUser.privacy as string) : null,
-        }
-      }),
-      { 
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    return NextResponse.json({
+      user: {
+        ...updatedUser,
+        notifications: updatedUser.notifications ? JSON.parse(updatedUser.notifications as string) : null,
+        privacy: updatedUser.privacy ? JSON.parse(updatedUser.privacy as string) : null,
       }
-    );
+    });
   } catch (error: unknown) {
     console.error('Profile update error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
-    return new NextResponse(
-      JSON.stringify({ error: errorMessage }),
-      { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+    return NextResponse.json(
+      { error: errorMessage },
+      { status: 500 }
     );
   }
 }
@@ -86,14 +68,9 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Unauthorized' }), 
-        { 
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
@@ -104,43 +81,25 @@ export async function GET() {
     });
 
     if (!user) {
-      return new NextResponse(
-        JSON.stringify({ error: 'User not found' }), 
-        { 
-          status: 404,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
       );
     }
 
-    return new NextResponse(
-      JSON.stringify({
-        user: {
-          ...user,
-          notifications: user.notifications ? JSON.parse(user.notifications as string) : null,
-          privacy: user.privacy ? JSON.parse(user.privacy as string) : null,
-        }
-      }),
-      { 
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    return NextResponse.json({
+      user: {
+        ...user,
+        notifications: user.notifications ? JSON.parse(user.notifications as string) : null,
+        privacy: user.privacy ? JSON.parse(user.privacy as string) : null,
       }
-    );
+    });
   } catch (error: unknown) {
     console.error('Profile fetch error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
-    return new NextResponse(
-      JSON.stringify({ error: errorMessage }),
-      { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+    return NextResponse.json(
+      { error: errorMessage },
+      { status: 500 }
     );
   }
 } 
