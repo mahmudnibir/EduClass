@@ -1,55 +1,22 @@
-import { Server } from 'socket.io';
 import { NextResponse } from 'next/server';
-import type { NextApiRequest } from 'next';
 import { Server as NetServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { NextApiResponseWithSocket } from '@/types/socket';
 
-export async function GET(req: NextApiRequest) {
-  if (!req.socket.server.io) {
-    const httpServer: NetServer = req.socket.server as any;
-    const io = new Server(httpServer, {
-      path: '/api/socket',
-      addTrailingSlash: false,
-      cors: {
-        origin: '*',
-        methods: ['GET', 'POST'],
-        credentials: true
-      },
-      transports: ['websocket', 'polling'],
-      connectionStateRecovery: {
-        maxDisconnectionDuration: 2 * 60 * 1000,
-        skipMiddlewares: true,
-      },
-    });
-
-    io.on('connection', (socket) => {
-      console.log('Socket connected:', socket.id);
-
-      socket.on('join-room', (roomId: string) => {
-        socket.join(roomId);
-        console.log(`Socket ${socket.id} joined room ${roomId}`);
-      });
-
-      socket.on('leave-room', (roomId: string) => {
-        socket.leave(roomId);
-        console.log(`Socket ${socket.id} left room ${roomId}`);
-      });
-
-      socket.on('send-message', async (data) => {
-        const { roomId, message, userId } = data;
-        io.to(roomId).emit('new-message', {
-          content: message,
-          userId,
-          createdAt: new Date(),
-        });
-      });
-
-      socket.on('disconnect', () => {
-        console.log('Socket disconnected:', socket.id);
-      });
-    });
-
-    req.socket.server.io = io;
+export async function GET(req: Request, res: NextApiResponseWithSocket) {
+  if (res.socket.server.io) {
+    console.log('Socket is already running');
+    return NextResponse.json({ message: 'Socket is already running' });
   }
 
-  return NextResponse.json({ success: true });
+  console.log('Socket is initializing');
+  const httpServer: NetServer = res.socket.server as any;
+  const io = new SocketIOServer(httpServer, {
+    path: '/api/socket_io',
+    addTrailingSlash: false,
+  });
+
+  res.socket.server.io = io;
+
+  return NextResponse.json({ message: 'Socket is initialized' });
 } 
